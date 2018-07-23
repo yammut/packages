@@ -10,13 +10,13 @@
 +	'Y', '3', 'p', 'M', '\n'
 +};
 +
- int main() {
+ int main(void) {
 -    printf("%d", (int) sizeof($ngx_type));
 +    printf("dummy use of object_code_block to avoid gc-section: %c", object_code_block[0]);
      return 0;
  }
  
-@@ -40,7 +45,7 @@ eval "$ngx_test >> $NGX_AUTOCONF_ERR 2>&
+@@ -40,7 +46,7 @@ eval "$ngx_test >> $NGX_AUTOCONF_ERR 2>&
  
  
  if [ -x $NGX_AUTOTEST ]; then

@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=giflib
-PKG_VERSION:=5.1.2
+PKG_VERSION:=5.1.4
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
 PKG_SOURCE_URL:=@SF/giflib
-PKG_MD5SUM:=323a9f11ab56c8a2d1715376410ce376
+PKG_HASH:=df27ec3ff24671f80b29e6ab1c4971059c14ac3db95406884fc26574631ba8d5
 
 PKG_MAINTAINER:=Ted Hess <thess@kitschensync.net>
 
@@ -23,6 +23,7 @@ PKG_LICENSE_FILES:=COPYING
 PKG_FIXUP:=autoreconf
 PKG_REMOVE_FILES:=autogen.sh aclocal.m4
 
+include $(INCLUDE_DIR)/host-build.mk
 include $(INCLUDE_DIR)/package.mk
 
 define Package/giflib
@@ -57,4 +58,5 @@ define Package/giflib/install
 	$(CP) $(PKG_BUILD_DIR)/lib/.libs/lib*so* $(1)/usr/lib/
 endef
 
+$(eval $(call HostBuild))
 $(eval $(call BuildPackage,giflib))

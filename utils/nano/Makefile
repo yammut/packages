@@ -8,14 +8,14 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=nano
-PKG_VERSION:=2.6.3
+PKG_VERSION:=2.9.8
 PKG_RELEASE:=1
 PKG_LICENSE:=GPL-3.0+
 PKG_LICENSE_FILES:=COPYING
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://www.nano-editor.org/dist/v2.6/
-PKG_MD5SUM:=1213c7f17916e65afefc95054c1f90f9
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
+PKG_SOURCE_URL:=@GNU/nano
+PKG_HASH:=c2deac31ba4d3fd27a42fafcc47ccf499296cc69a422bbecab63f2933ea85488
 
 PKG_INSTALL:=1
 PKG_BUILD_PARALLEL:=1
@@ -28,7 +28,8 @@ define Package/nano
   CATEGORY:=Utilities
   TITLE:=An enhanced clone of the Pico text editor
   URL:=http://www.nano-editor.org/
-  MAINTAINER:=Jonathan Bennett <JBennett@incomsystems.biz>
+  MAINTAINER:=Jonathan Bennett <JBennett@incomsystems.biz>, \
+		Hannu Nyman <hannu.nyman@iki.fi>
   DEPENDS:=+libncurses
 endef
 
@@ -39,10 +40,9 @@ endef
 
 CONFIGURE_ARGS += \
 	--enable-tiny \
-	--disable-glibtest \
 	--disable-utf8 \
-        --without-slang \
-        --disable-color \
+	--without-slang \
+	--disable-color \
 
 CONFIGURE_VARS += \
 	ac_cv_header_regex_h=no \

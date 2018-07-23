@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=acpid
-PKG_VERSION:=2.0.27
+PKG_VERSION:=2.0.29
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
-PKG_SOURCE_URL:=@SF/acpid2 
-PKG_MD5SUM:=e41bdf628e122edb4342fca432ea7db9
+PKG_SOURCE_URL:=@SF/acpid2
+PKG_HASH:=58503b27975c466e627eb741c5453dd662f97edef1a3d0aac822fd03a84203ff
 PKG_MAINTAINER:=Thomas Heil <heil@terminal-consulting.de>
 PKG_LICENSE:=GPL-2.0
 PKG_LICENSE_FILES:=COPYING
@@ -25,7 +25,7 @@ define Package/acpid
   CATEGORY:=Utilities
   TITLE:=The ACPI Daemon (acpid) With Netlink Support
   URL:=http://tedfelix.com/linux/acpid-netlink.html
-  DEPENDS:=@(TARGET_x86||TARGET_x86_64) +kmod-input-evdev 
+  DEPENDS:=+kmod-input-evdev 
 endef
 
 define Package/acpid/description

@@ -9,31 +9,32 @@ include $(TOPDIR)/rules.mk
 
 PKG_NPM_NAME:=cylon
 PKG_NAME:=node-$(PKG_NPM_NAME)
-PKG_VERSION:=0.22.0
-PKG_RELEASE:=4
+PKG_VERSION:=0.24.0
+PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://github.com/hybridgroup/cylon-firmata.git
-PKG_SOURCE_VERSION:=0c37da77e48b3e2cc3a8d566822a17689de91b40
+PKG_SOURCE_VERSION:=a930f8446f23ec2cb28aadeff54b79ab7704e3a0
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_SOURCE_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_SOURCE_VERSION).tar.gz
+PKG_MIRROR_HASH:=dceb75539d32f402db0a5f68f2c7e2b52e5547a5ac2dec875d34fd3cc95cce00
 
 PKG_BUILD_DEPENDS:=node/host
-PKG_NODE_VERSION:=4.4.5
+PKG_NODE_VERSION:=8.10.0
 
 PKG_MAINTAINER:=John Crispin <blogic@openwrt.org>
 PKG_LICENSE:=Apache-2.0
-PKG_LICENSE_FILE:=LICENSE
+PKG_LICENSE_FILES:=LICENSE
 
 include $(INCLUDE_DIR)/package.mk
 
 define Package/node-cylon/default
-  DEPENDS:=+node $(2)
   SUBMENU:=Node.js
   SECTION:=lang
   CATEGORY:=Languages
   TITLE:=CylonJS - $(1)
   URL:=https://www.npmjs.org/package/cylon
+  DEPENDS:=+node +node-npm $(2)
 endef
 
 define Package/node-cylon
@@ -69,7 +70,7 @@ define Build/Compile
 	npm_config_nodedir=$(BUILD_DIR)/node-v$(PKG_NODE_VERSION)/ \
 	npm_config_cache=$(BUILD_DIR)/node-v$(PKG_NODE_VERSION)/npm-cache \
 	PREFIX="$(PKG_INSTALL_DIR)/usr/" \
-	$(STAGING_DIR)/host/bin/npm install -g $(PKG_BUILD_DIR)
+	npm install -g $(PKG_BUILD_DIR)
 endef
 
 define Package/node-cylon/install

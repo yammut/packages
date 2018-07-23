@@ -1,20 +1,19 @@
 #
-# Copyright (C) 2009-2015 OpenWrt.org
-#
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
 #
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=umurmur
-PKG_VERSION:=0.2.16
+PKG_VERSION:=0.2.17
 PKG_RELEASE:=1
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
+PKG_MIRROR_HASH:=d41db898c826077735d48ec1d1ff9ed200d6520f46ae3dbb0a89dfaad49310cd
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE_URL:=git://github.com/umurmur/umurmur.git
+PKG_SOURCE_URL:=https://github.com/umurmur/umurmur.git
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=0.2.16
+PKG_SOURCE_VERSION:=c4f6b1f6d27f7d7a556d30aedee73a675b5a6c48
 
 PKG_INSTALL:=1
 PKG_FIXUP:=autoreconf
@@ -32,8 +31,7 @@ define Package/umurmur/Default
   SUBMENU:=Instant Messaging
   TITLE:=uMurmur
   DEPENDS:=+libconfig +libprotobuf-c
-  URL:=http://code.google.com/p/umurmur
-  MAINTAINER:=Martin Johansson <martin@fatbob.nu>
+  URL:=http://umurmur.net
 endef
 
 define Package/umurmur/Default/description
@@ -52,16 +50,16 @@ define Package/umurmur-openssl/description
   Uses OpenSSL library for SSL and crypto.
 endef
 
-define Package/umurmur-polarssl
+define Package/umurmur-mbedtls
   $(call Package/umurmur/Default)
-  TITLE+= (with PolarSSL support)
-  DEPENDS+= +libpolarssl
-  VARIANT:=polarssl
+  TITLE+= (with mbed TLS support)
+  DEPENDS+= +libmbedtls
+  VARIANT:=mbedtls
 endef
 
-define Package/umurmur-polarssl/description
+define Package/umurmur-mbedtls/description
   $(call Package/umurmur/Default/description)
-  Uses the PolarSSL library for SSL and crypto.
+  Uses the mbed TLS library for SSL and crypto.
 endef
 
 define Build/Compile
@@ -75,7 +73,7 @@ define Package/umurmur-openssl/conffiles
 /etc/umurmur.conf
 endef
 
-Package/umurmur-polarssl/conffiles = $(Package/umurmur-openssl/conffiles)
+Package/umurmur-mbedtls/conffiles = $(Package/umurmur-openssl/conffiles)
 
 define Package/umurmur-openssl/install
 	$(INSTALL_DIR) $(1)/usr/bin
@@ -87,17 +85,17 @@ define Package/umurmur-openssl/install
 	$(INSTALL_DIR) $(1)/etc/umurmur
 endef
 
-Package/umurmur-polarssl/install = $(Package/umurmur-openssl/install)
+Package/umurmur-mbedtls/install = $(Package/umurmur-openssl/install)
 
 ifeq ($(BUILD_VARIANT),openssl)
   CONFIGURE_ARGS += \
 	--with-ssl=openssl
 endif
 
-ifeq ($(BUILD_VARIANT),polarssl)
+ifeq ($(BUILD_VARIANT),mbedtls)
   CONFIGURE_ARGS += \
-	--with-ssl=polarssl
+	--with-ssl=mbedtls
 endif
 
 $(eval $(call BuildPackage,umurmur-openssl))
-$(eval $(call BuildPackage,umurmur-polarssl))
+$(eval $(call BuildPackage,umurmur-mbedtls))

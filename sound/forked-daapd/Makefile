@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2006-2015 OpenWrt.org
+# Copyright (C) 2006-2016 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,17 +8,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=forked-daapd
-PKG_VERSION:=24.1
+PKG_VERSION:=26.1
 PKG_RELEASE:=1
-PKG_REV:=524d060b7a9a68ab4375460d2da611a80e4fc18b
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
-PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=git://github.com/ejurgensen/forked-daapd.git
-PKG_SOURCE_VERSION:=$(PKG_REV)
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
+PKG_SOURCE_URL:=https://github.com/ejurgensen/$(PKG_NAME)/releases/download/$(PKG_VERSION)/
+PKG_HASH:=dec7a6b5879c43726ceeb40cb16b77f7bb3148ab4e0afec0947629b11f302720
 
-PKG_BUILD_DEPENDS:=gperf/host
 PKG_FIXUP:=autoreconf
 PKG_USE_MIPS16:=0
 PKG_INSTALL:=1
@@ -38,7 +34,7 @@ URL:=https://github.com/ejurgensen/forked-daapd
 DEPENDS:=+libgpg-error +libgcrypt +libgdbm +zlib +libexpat +libunistring \
 	+libevent2 +libdaemon +libantlr3c +confuse +alsa-lib +libffmpeg-full \
 	+mxml +libavahi-client +sqlite3-cli +libplist +libcurl +libjson-c \
-	+libprotobuf-c +libgnutls $(ICONV_DEPENDS)
+	+libprotobuf-c +libgnutls +libsodium +libwebsockets $(ICONV_DEPENDS)
 endef
 
 define Package/forked-daapd/description
@@ -56,7 +52,14 @@ CONFIGURE_ARGS += \
 	--enable-itunes \
 	--enable-lastfm \
 	--enable-mpd \
-	--enable-chromecast
+	--enable-chromecast \
+	--enable-verification \
+	--disable-spotify \
+	--with-libplist \
+	--with-libwebsockets \
+	--with-alsa \
+	--without-pulseaudio \
+	--without-libevent_pthreads
 
 TARGET_CFLAGS += $(FPIC)
 TARGET_LDFLAGS += -Wl,-rpath-link,$(STAGING_DIR)/usr/lib

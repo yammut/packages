@@ -8,16 +8,17 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=radsecproxy
-PKG_VERSION:=1.6.7
-PKG_RELEASE:=2
+PKG_VERSION:=1.7.1
+PKG_RELEASE:=1
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
-PKG_SOURCE_URL:=http://software.uninett.no/radsecproxy/
-PKG_MD5SUM:=d76cf4fc68515667b8c67387f5045150
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+PKG_SOURCE_URL:=https://github.com/radsecproxy/radsecproxy/releases/download/$(PKG_VERSION)/
+PKG_HASH:=49fd644684c6ea502d896d31e29f1acf2ae9b61b02b231a8ffd0cec11857dd07
 
 PKG_LICENSE:=GPL-2.0+
 PKG_LICENSE_FILES:=LICENSE
 
+PKG_FIXUP:=autoreconf
 PKG_INSTALL:=1
 
 include $(INCLUDE_DIR)/package.mk
@@ -25,9 +26,9 @@ include $(INCLUDE_DIR)/package.mk
 define Package/radsecproxy
   SECTION:=net
   CATEGORY:=Network
-  DEPENDS:=+libopenssl +libpthread
+  DEPENDS:=+libopenssl +libpthread +libnettle
   TITLE:=radsecproxy
-  URL:=http://software.uninett.no/radsecproxy
+  URL:=https://radsecproxy.github.io/
   MAINTAINER:=Toke Høiland-Jørgensen <toke@toke.dk>
 endef
 

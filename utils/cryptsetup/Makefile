@@ -8,14 +8,14 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=cryptsetup
-PKG_VERSION:=1.7.2
+PKG_VERSION:=2.0.3
 PKG_RELEASE:=1
 PKG_LICENSE:=GPL-2.0+ LGPL-2.1+
 PKG_LICENSE_FILES:=COPYING COPYING.LGPL
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
-PKG_SOURCE_URL:=@KERNEL/linux/utils/cryptsetup/v1.7
-PKG_MD5SUM:=a11a140cea496961222170944db01fc1
+PKG_SOURCE_URL:=@KERNEL/linux/utils/cryptsetup/v2.0
+PKG_HASH:=4d6cca04c1f5ff4a68d045d190efb2623087eda0274ded92f92a4b6911e501d4
 PKG_MAINTAINER:=Daniel Golle <daniel@makrotopia.org>
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(BUILD_VARIANT)/$(PKG_NAME)-$(PKG_VERSION)
@@ -27,8 +27,9 @@ TARGET_LDFLAGS+=-Wl,-rpath-link=$(STAGING_DIR)/usr/lib
 define Package/cryptsetup/Default
   SECTION:=utils
   CATEGORY:=Utilities
+  SUBMENU:=Encryption
   TITLE:=Cryptsetup
-  DEPENDS:=+libblkid +libuuid +libpopt +lvm2 +libdevmapper +@KERNEL_DIRECT_IO
+  DEPENDS:=+libblkid +libuuid +libpopt +lvm2 +libdevmapper +libjson-c +@KERNEL_DIRECT_IO
   URL:=http://code.google.com/p/cryptsetup/
 endef
 
@@ -67,9 +68,9 @@ endif
 
 define Package/cryptsetup/install
 	$(INSTALL_DIR) $(1)/usr/sbin
-	$(CP) $(PKG_BUILD_DIR)/src/.libs/cryptsetup $(1)/usr/sbin
+	$(CP) $(PKG_BUILD_DIR)/.libs/cryptsetup $(1)/usr/sbin
 	$(INSTALL_DIR) $(1)/usr/lib
-	$(CP) $(PKG_BUILD_DIR)/lib/.libs/libcryptsetup.so* $(1)/usr/lib
+	$(CP) $(PKG_BUILD_DIR)/.libs/libcryptsetup.so* $(1)/usr/lib
 endef
 
 Package/cryptsetup-openssl/install = $(Package/cryptsetup/install)

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2008-2015 OpenWrt.org
+# Copyright (C) 2008-2017 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,10 +8,11 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=wavemon
-PKG_VERSION:=0.8.0
+PKG_VERSION:=0.8.2
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
+PKG_MIRROR_HASH:=412ced9e59677532cde388cf329ccbe8c3dbdd505855f1ef298af9894fd6561c
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 PKG_SOURCE_URL:=https://github.com/uoaerg/wavemon.git
@@ -43,7 +44,8 @@ define Package/wavemon/description
 endef
 
 CONFIGURE_VARS += \
-	ac_cv_lib_cap_cap_get_flag=no
+	ac_cv_lib_cap_cap_get_flag=no \
+	BUILD_DATE=$(SOURCE_DATE_EPOCH)
 
 TARGET_CFLAGS += -pthread -I$(STAGING_DIR)/usr/include/libnl3
 

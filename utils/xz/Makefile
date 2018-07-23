@@ -1,5 +1,6 @@
 #
 # Copyright (C) 2013-2015 OpenWrt.org
+# Copyright (C) 2017 Daniel Engberg <daniel.engberg.lists@pyret.net>
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,13 +9,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=xz
-PKG_VERSION:=5.2.2
+PKG_VERSION:=5.2.4
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
-PKG_SOURCE_URL:=http://tukaani.org/xz \
-		http://fossies.org/linux/misc
-PKG_MD5SUM:=f90c9a0c8b259aee2234c4e0d7fd70af
+PKG_SOURCE_URL:=@SF/lzmautils
+PKG_HASH:=3313fd2a95f43d88e44264e6b015e7d03053e681860b0d5d3f9baca79c57b7bf
 
 PKG_LICENSE:=Public-Domain LGPL-2.1+ GPL-2.0+ GPL-3.0+
 PKG_LICENSE_FILES:=COPYING
@@ -29,7 +29,7 @@ define Package/xz/Default
   SUBMENU:=Compression
   SECTION:=utils
   CATEGORY:=Utilities
-  URL:=http://tukaani.org/xz
+  URL:=https://tukaani.org/xz
 endef
 
 define Package/xz-utils

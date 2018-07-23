@@ -8,18 +8,22 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=stunnel
-PKG_VERSION:=5.20
-PKG_RELEASE:=1
+PKG_VERSION:=5.44
+PKG_RELEASE:=4
 
 PKG_LICENSE:=GPL-2.0+
-PKG_MAINTAINER:=Michael Haas <haas@computerlinguist.org>
+PKG_MAINTAINER:=Florian Eckert <fe@dev.tdt.de>
 PKG_LICENSE_FILES:=COPYING COPYRIGHT.GPL
 
-PKG_SOURCE_URL:=http://stunnel.cybermirror.org/archive/5.x/
+PKG_SOURCE_URL:= \
+	http://ftp.nluug.nl/pub/networking/stunnel/ \
+	http://www.usenix.org.uk/mirrors/stunnel/ \
+	https://www.stunnel.org/downloads/
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_MD5SUM:=3264375026c2b496b5d258e243222de8
+PKG_HASH:=990a325dbb47d77d88772dd02fbbd27d91b1fea3ece76c9ff4461eca93f12299
 
 PKG_FIXUP:=autoreconf
+PKG_FIXUP:=patch-libtool
 PKG_INSTALL:=1
 
 include $(INCLUDE_DIR)/package.mk
@@ -27,7 +31,7 @@ include $(INCLUDE_DIR)/package.mk
 define Package/stunnel
   SECTION:=net
   CATEGORY:=Network
-  DEPENDS:=+libopenssl +zlib
+  DEPENDS:=+libopenssl +zlib +libpthread
   TITLE:=SSL TCP Wrapper
   URL:=http://www.stunnel.org/
 endef
@@ -42,15 +46,17 @@ endef
 
 define Package/stunnel/conffiles
 /etc/stunnel/stunnel.conf
+/etc/config/stunnel
 endef
 
 
 CONFIGURE_ARGS+= \
 	--with-random=/dev/urandom \
-	--with-threads=fork \
+	--with-threads=pthread \
 	--with-ssl=$(STAGING_DIR)/usr \
 	--disable-libwrap \
-	--disable-systemd
+	--disable-systemd \
+	--disable-fips
 
 ifeq ($(CONFIG_IPV6),n)
 CONFIGURE_ARGS+= \
@@ -72,6 +78,8 @@ define Package/stunnel/install
 	$(INSTALL_CONF) ./files/stunnel.conf $(1)/etc/stunnel/stunnel.conf
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/stunnel.init $(1)/etc/init.d/stunnel
+	$(INSTALL_DIR) $(1)/etc/config
+	$(INSTALL_CONF) ./files/stunnel.uci $(1)/etc/config/stunnel
 endef
 
 $(eval $(call BuildPackage,stunnel))

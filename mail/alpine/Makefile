@@ -8,16 +8,20 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=alpine
-PKG_VERSION:=2.20
-PKG_RELEASE:=2
+PKG_VERSION:=2.21.999
+PKG_RELEASE:=1
 
-PKG_SOURCE_URL:=http://patches.freeiz.com/alpine/release/src/
+PKG_SOURCE_PROTO:=git
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
-PKG_MD5SUM:=043b67666af73b26f9627ad97e2aaf92
+PKG_SOURCE_URL:=http://repo.or.cz/alpine.git
+PKG_SOURCE_VERSION:=349642a84039a4b026513c32a3b4f8594acd50df
+PKG_MIRROR_HASH:=8db14c4ae14329a7cffc8ea5099b7fa5c7adf79ca03893b23b1a8c45b847e5af
 
 PKG_MAINTAINER:=Antti Seppälä <a.seppala@gmail.com>
 PKG_LICENSE:=Apache-2.0
 PKG_LICENSE_FILES:=LICENSE
+
+PKG_FIXUP:=autoreconf
 
 PKG_INSTALL:=1
 

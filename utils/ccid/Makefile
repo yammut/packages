@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=ccid
-PKG_VERSION:=1.4.22
+PKG_VERSION:=1.4.29
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
-PKG_SOURCE_URL:=https://alioth.debian.org/frs/download.php/file/4162
-PKG_MD5SUM:=150e1edc449ad394572dd72490b7b6f4
+PKG_SOURCE_URL:=https://ccid.apdu.fr/files/
+PKG_HASH:=a5432ae845730493c04e59304b5c0c6103cd0e2c8827df57d69469a3eaaab84d
 PKG_MAINTAINER:=Daniel Golle <daniel@makrotopia.org>
 PKG_LICENSE:=LGPL-2.1+
 PKG_LICENSE_FILES:=COPYING
@@ -28,7 +28,7 @@ define Package/ccid
   CATEGORY:=Libraries
   DEPENDS:=+libusb-1.0 +libpcsclite
   TITLE:=Generic USB CCID smart card reader driver
-  URL:=http://pcsclite.alioth.debian.org/ccid.html
+  URL:=https://ccid.apdu.fr/
 endef
 
 define Package/ccid/description

@@ -8,21 +8,18 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libp11
-PKG_VERSION:=20141217
+PKG_VERSION:=0.4.7
 PKG_RELEASE:=1
+PKG_HASH:=32e486d4279e09174b63eb263bc840016ebfa80b0b154390c0539b211aec0452
+
 PKG_MAINTAINER:=Daniel Golle <daniel@makrotopia.org>
 PKG_LICENSE:=LGPL-2.1+
 PKG_LICENSE_FILES:=COPYING
 
-PKG_RELEASE=$(PKG_SOURCE_VERSION)
-
-PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=https://github.com/OpenSC/libp11.git
-PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE_VERSION:=9f433022a039bbdf31f6c334f442ac3494ac4a07
+PKG_SOURCE_URL:=https://github.com/OpenSC/libp11/releases/download/$(PKG_NAME)-$(PKG_VERSION)/
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_FIXUP:=libtool
 
+PKG_FIXUP:=libtool
 PKG_INSTALL:=1
 
 include $(INCLUDE_DIR)/package.mk
@@ -33,6 +30,7 @@ define Package/libp11
   TITLE:=PKCS#11 wrapper library
   URL:=https://www.opensc-project.org/opensc/wiki/libp11
   DEPENDS:=+libopenssl
+  CONFLICTS:=engine_pkcs11
 endef
 
 define Package/libp11/description
@@ -40,9 +38,11 @@ define Package/libp11/description
   to make using PKCS#11 implementations easier.
 endef
 
+CONFIGURE_ARGS += --with-enginesdir=/usr/lib/engines
+
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/include/
-	$(CP) $(PKG_INSTALL_DIR)/usr/include/libp11.h $(1)/usr/include/
+	$(CP) $(PKG_INSTALL_DIR)/usr/include/*.h $(1)/usr/include/
 	$(INSTALL_DIR) $(1)/usr/lib
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libp11.{a,so} $(1)/usr/lib/
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libp11.so* $(1)/usr/lib/
@@ -51,8 +51,11 @@ define Build/InstallDev
 endef
 
 define Package/libp11/install
-	$(INSTALL_DIR) $(1)/usr/lib
+	$(INSTALL_DIR) $(1)/usr/lib/
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libp11.so.* $(1)/usr/lib/
+	$(INSTALL_DIR) $(1)/usr/lib/engines
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/engines/*.so* $(1)/usr/lib/engines
+	$(LN) pkcs11.so $(1)/usr/lib/engines/libpkcs11.so
 endef
 
 $(eval $(call BuildPackage,libp11))

@@ -8,16 +8,16 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=freetype
-PKG_VERSION:=2.5.5
-PKG_RELEASE:=2
+PKG_VERSION:=2.9.1
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
 PKG_SOURCE_URL:=@SF/freetype
-PKG_MD5SUM:=2a7a314927011d5030903179cf183be0
+PKG_HASH:=db8d87ea720ea9d5edc5388fc7a0497bb11ba9fe972245e0f7f4c7e8b1e1e84d
 
 PKG_LICENSE:=FTL GPL-2.0 MIT ZLIB
 PKG_LICENSE_FILES:=docs/LICENSE.TXT docs/FTL.TXT docs/GPLv2.TXT src/bdf/README src/pcf/README src/gzip/zlib.h
-PKG_MAINTAINER:=Nicolas Thill <nico@openwrt.org>
+PKG_MAINTAINER:=Val Kulkov <val.kulkov@gmail.com>
 
 PKG_FIXUP:=autoreconf
 PKG_LIBTOOL_PATHS:=builds/unix
@@ -30,7 +30,7 @@ define Package/libfreetype
   CATEGORY:=Libraries
   TITLE:=A free, high-quality and portable font engine
   URL:=http://www.freetype.org/
-  DEPENDS:=+zlib +libbz2
+  DEPENDS:=+zlib +libpng
 endef
 
 define Package/libfreetype/description
@@ -43,17 +43,20 @@ endef
 TARGET_CFLAGS += $(FPIC)
 
 CONFIGURE_ARGS += \
+	--enable-freetype-config \
 	--enable-shared \
 	--enable-static \
-	--with-bzip2=yes \
+	--with-bzip2=no \
 	--with-zlib=yes \
-	--with-png=no \
+	--with-png=yes
 
 define Build/Compile
 	$(MAKE) -C $(PKG_BUILD_DIR) DESTDIR="$(PKG_INSTALL_DIR)" all install
 endef
 
 define Build/InstallDev
+	$(INSTALL_DIR) $(1)/bin
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/freetype-config $(1)/bin/
 	$(INSTALL_DIR) $(2)/bin
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/freetype-config $(2)/bin/
 	$(INSTALL_DIR) $(1)/usr/include
@@ -63,11 +66,6 @@ define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/lib/pkgconfig
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/pkgconfig/freetype2.pc $(1)/usr/lib/pkgconfig/
 
-	$(SED) \
-		's,^\(prefix\|exec_prefix\)=.*,\1="$(STAGING_DIR)/usr",; \
-		 s,^\(includedir\)=.*,\1="$(STAGING_DIR)/usr/include",; \
-		 s,^\(libdir\)=.*,\1="$(STAGING_DIR)/usr/lib",' \
-		 $(2)/bin/freetype-config
 	$(SED) \
 		's,/usr/include,$$$${prefix}/include,g; \
 		 s,/usr/lib,$$$${exec_prefix}/lib,g' \

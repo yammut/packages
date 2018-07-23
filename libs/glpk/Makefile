@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=glpk
-PKG_VERSION:=4.60
+PKG_VERSION:=4.65
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=@GNU/$(PKG_NAME)
-PKG_MD5SUM:=eda7965907f6919ffc69801646f13c3e
+PKG_HASH:=4281e29b628864dfe48d393a7bedd781e5b475387c20d8b0158f329994721a10
 
 PKG_LICENSE:=GPL-3.0
 PKG_LICENSE_FILES:=COPYING
@@ -27,7 +27,7 @@ define Package/libglpk
 	SECTION:=libs
 	CATEGORY:=Libraries
 	TITLE:=The GNU Linear Programming Kit
-	URL:=http://www.gnu.org/software/glpk/
+	URL:=https://www.gnu.org/software/glpk/
 endef
 
 define Package/libglpk/description
@@ -41,7 +41,7 @@ define Package/glpsol
 	SECTION:=libs
 	CATEGORY:=Libraries
 	TITLE:=The GNU Linear Programming Kit (glpsol)
-	URL:=http://www.gnu.org/software/glpk/
+	URL:=https://www.gnu.org/software/glpk/
 	DEPENDS:=libglpk
 endef
 

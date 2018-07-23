@@ -8,20 +8,17 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=opensc
-PKG_VERSION:=20150513
+PKG_VERSION:=0.18.0
 PKG_RELEASE:=1
+PKG_HASH:=9bc0ff030dd1c10f646d54415eae1bb2b1c72dda710378343f027e17cd8c3757
+
 PKG_LICENSE:=LGPL-2.1+
 PKG_LICENSE_FILES:=COPYING
 PKG_MAINTAINER:=Daniel Golle <daniel@makrotopia.org>
-
-PKG_RELEASE=$(PKG_SOURCE_VERSION)
-
-PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=https://github.com/OpenSC/OpenSC.git
-PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE_VERSION:=a09ca246a797230c14bc33a34f2dddc4a4dbff40
+PKG_SOURCE_URL:=https://github.com/OpenSC/OpenSC/releases/download/$(PKG_VERSION)/
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_BUILD_DEPENDS:=+libpcsclite
+
+PKG_BUILD_DEPENDS:=pcsc-lite
 PKG_FIXUP:=libtool
 
 PKG_INSTALL:=1
@@ -33,7 +30,7 @@ define Package/libopensc
   CATEGORY:=Libraries
   TITLE:=OpenSC libraries for smart cards
   URL:=https://github.com/OpenSC/OpenSC/wiki
-  DEPENDS:=+libopenssl +libpthread
+  DEPENDS:=+libopenssl +libpthread +zlib
   MENU:=1
 endef
 
@@ -95,7 +92,7 @@ define ProfileGen
 define Package/libopensc-profile-$(subst _,-,$(firstword $(subst :, ,$(1))))
   TITLE:=$(firstword $(subst :, ,$(1))) card profile for opensc
   URL:=https://github.com/OpenSC/OpenSC/wiki
-  SECTION:=lib
+  SECTION:=libs
   CATEGORY:=Libraries
   DEPENDS:=libopensc
 endef
@@ -155,8 +152,8 @@ $(foreach file,$(PROFILES),$(eval $(call ProfileGen,$(file))))
 
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/lib
-	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libopensc.{a,so}* $(1)/usr/lib/
-	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libsmm-local.{a,so}* $(1)/usr/lib/
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libopensc.{la,so}* $(1)/usr/lib/
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libsmm-local.{la,so}* $(1)/usr/lib/
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/opensc-pkcs11.so $(1)/usr/lib/
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/pkcs11-spy.so $(1)/usr/lib/
 	$(INSTALL_DIR) $(1)/usr/lib/pkcs11

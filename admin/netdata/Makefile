@@ -8,17 +8,15 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=netdata
-PKG_VERSION:=1.2.0
+PKG_VERSION:=1.10.0
 PKG_RELEASE:=1
-PKG_MAINTAINER:=Sebastian Careba <nitroshift@yahoo.com>
+PKG_MAINTAINER:=
 PKG_LICENSE:=GPL-3.0
 PKG_LICENSE_FILES:=COPYING
 
-PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=https://github.com/firehol/netdata
-PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE_VERSION:=bb4aa949f5ac825253d8adc6070661299abc1c3b
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
+PKG_SOURCE_URL:=https://github.com/firehol/netdata/releases/download/v$(PKG_VERSION)
+PKG_HASH:=0514fc002c5c5fb730156b3fe928965b22327833c6c17e22b7097eda657e77a2
 
 PKG_INSTALL:=1
 PKG_FIXUP:=autoreconf
@@ -28,9 +26,9 @@ include $(INCLUDE_DIR)/package.mk
 define Package/netdata
   SECTION:=admin
   CATEGORY:=Administration
-  DEPENDS:=+zlib +libuuid
+  DEPENDS:=+zlib +libuuid +libmnl
   TITLE:=Real-time performance monitoring tool
-  URL:=http://netdata.firehol.org/
+  URL:=https://my-netdata.io/
 endef
 
 define Package/netdata/description
@@ -38,24 +36,36 @@ define Package/netdata/description
   monitoring for Linux systems, applications and SNMP devices over the web.
 endef
 
+TARGET_CFLAGS := $(filter-out -O%,$(TARGET_CFLAGS))
+TARGET_CFLAGS += -ffunction-sections -fdata-sections -O3
+TARGET_LDFLAGS += -Wl,--gc-sections
+
+CONFIGURE_ARGS += --with-zlib --with-math --disable-x86-sse --disable-lto
+
 define Package/netdata/conffiles
 /etc/netdata/
 endef
 
 define Package/netdata/install
-	$(INSTALL_DIR) $(1)/etc/netdata
-	$(INSTALL_CONF) $(PKG_INSTALL_DIR)/etc/netdata/apps_groups.conf $(1)/etc/netdata
-	$(INSTALL_CONF) $(PKG_INSTALL_DIR)/etc/netdata/charts.d.conf $(1)/etc/netdata
-	$(INSTALL_CONF) ./files/netdata.conf $(1)/etc/netdata
-	$(INSTALL_DIR) $(1)/etc/init.d
-	$(INSTALL_BIN) ./files/netdata.init $(1)/etc/init.d/netdata
-	$(INSTALL_DIR) $(1)/usr/sbin
-	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/netdata $(1)/usr/sbin/
-	$(INSTALL_DIR) $(1)/usr/share/netdata
-	$(INSTALL_DIR) $(1)/usr/lib/netdata
+	mkdir -p $(1)/etc/netdata
+	$(CP) $(PKG_INSTALL_DIR)/etc/netdata $(1)/etc
+	$(CP) ./files/netdata.conf $(1)/etc/netdata
+	mkdir -p $(1)/usr/share/netdata
 	$(CP) $(PKG_INSTALL_DIR)/usr/share/netdata $(1)/usr/share
+	rm -rf $(1)/usr/share/netdata/web/images
+	rm -rf $(1)/usr/share/netdata/web/old
+	rm $(1)/usr/share/netdata/web/demo*html
+	rm $(1)/usr/share/netdata/web/fonts/*.svg
+	rm $(1)/usr/share/netdata/web/fonts/*.ttf
+	rm $(1)/usr/share/netdata/web/fonts/*.woff
+	mkdir -p $(1)/usr/lib/netdata
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/netdata $(1)/usr/lib
+	rm $(1)/usr/lib/netdata/python.d/python-modules-installer.sh
 	chmod 4755 $(1)/usr/lib/netdata/plugins.d/apps.plugin
+	mkdir -p $(1)/etc/init.d
+	$(INSTALL_BIN) ./files/netdata.init $(1)/etc/init.d/netdata
+	mkdir -p $(1)/usr/sbin
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/netdata $(1)/usr/sbin
 endef
 
 $(eval $(call BuildPackage,netdata))

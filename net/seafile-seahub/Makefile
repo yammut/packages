@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2007-2016 OpenWrt.org
+# Copyright (C) 2007-2017 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,18 +8,19 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=seafile-seahub
-PKG_VERSION:=5.1.4
+PKG_VERSION:=6.3.0
 PKG_RELEASE=$(PKG_SOURCE_VERSION)-1
 PKG_LICENSE:=Apache-2.0
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://github.com/haiwen/seahub.git
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE_VERSION:=1e1c02aa4f2a0256ffa29a28224aad2d678f43a0
+PKG_SOURCE_VERSION:=d1ab146a936a6ea1e1581bf3f194e86742f0d3cd
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
+PKG_MIRROR_HASH:=21c2ed3886d0c87853f9720704b14c0a0dce8215e7346af775e306f80b29fa0d
 
 include $(INCLUDE_DIR)/package.mk
-$(call include_mk, python-package.mk)
+include ../../lang/python/python-package.mk
 
 define Package/seafile-seahub
     SECTION:=net
@@ -28,9 +29,11 @@ define Package/seafile-seahub
     MAINTAINER:=Gergely Kiss <mail.gery@gmail.com>
     URL:=http://seafile.com/
     DEPENDS:=+simplejson +python +pillow +chardet +django +django-appconf \
-		+django-compressor +django-constance +django-jsonfield +django-picklefield \
-		+django-postoffice +django-restframework +django-statici18n +et_xmlfile \
-		+flup +gunicorn +jdcal +openpyxl +python-dateutil +python-mysql +pytz +rcssmin
+		+django-compressor +django-constance +django-formtools +django-jsonfield \
+		+django-picklefield +django-postoffice +django-restframework \
+		+django-simple-captcha +django-statici18n +django-webpack-loader +et_xmlfile \
+		+flup +gunicorn +jdcal +openpyxl +python-dateutil +python-mysql \
+		+python-qrcode +python-requests +python-requests-oauthlib +pytz +rcssmin
 endef
 
 define Build/Configure

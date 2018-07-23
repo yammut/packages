@@ -7,9 +7,9 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=nfs-kernel-server
-PKG_VERSION:=1.3.3
-PKG_RELEASE:=3
-PKG_MD5SUM:=9b87d890669eaaec8e97a2b0a35b2665
+PKG_VERSION:=2.3.2
+PKG_RELEASE:=1
+PKG_HASH:=1748a046e452ceb2285cc07b61ec0f85af7c92ac443e111a6c8a1061254ca717
 
 PKG_SOURCE_URL:=@SF/nfs
 PKG_SOURCE:=nfs-utils-$(PKG_VERSION).tar.bz2
@@ -68,8 +68,10 @@ define Package/nfs-utils/description
   Updated mount.nfs command - allows mounting nfs4 volumes
 endef
 
-TARGET_CFLAGS += -I$(PKG_BUILD_DIR)/lib -I$(STAGING_DIR)/usr/include/libevent \
-		 -I$(STAGING_DIR)/usr/include/ -Drpc_uint=uint
+TARGET_CFLAGS += -Wno-error=implicit-function-declaration \
+		 -Wno-error=strict-prototypes \
+		 -Wno-error=incompatible-pointer-types \
+		 -Wno-error=undef
 TARGET_LDFLAGS += -Wl,-rpath-link=$(STAGING_DIR)/usr/lib $(LIBRPC) \
 		  -L$(STAGING_DIR)/usr/lib/libevent
 
@@ -81,11 +83,11 @@ CONFIGURE_ARGS += \
 	--enable-static \
 	--enable-shared \
 	--disable-caps \
-	--disable-tirpc \
-	--disable-nfsdcld
+	--disable-tirpc
 
 CONFIGURE_VARS += \
 	libblkid_cv_is_recent=yes \
+	ac_cv_lib_resolv___res_querydomain=yes \
 	CONFIG_SQLITE3_TRUE="\#" \
 	CONFIG_NFSDCLD_TRUE="\#"
 
@@ -93,8 +95,8 @@ MAKE_FLAGS += \
 	OPT="$(TARGET_CFLAGS)" \
 	INSTALLSUID="install -m 4755" \
 	DESTDIR="$(PKG_INSTALL_DIR)" \
-	RPCGEN_PATH=$(STAGING_DIR)/host/bin/rpcgen \
-	RPCGEN=$(STAGING_DIR)/host/bin/rpcgen
+	RPCGEN_PATH=$(STAGING_DIR_HOSTPKG)/bin/rpcgen \
+	RPCGEN=$(STAGING_DIR_HOSTPKG)/bin/rpcgen
 
 HOST_CFLAGS += -Dlinux
 
@@ -125,8 +127,8 @@ define Host/Compile
 endef
 
 define Host/Install
-	$(INSTALL_DIR) $(STAGING_DIR)/host/bin
-	$(INSTALL_BIN) $(HOST_BUILD_DIR)/tools/rpcgen/rpcgen $(STAGING_DIR)/host/bin/rpcgen
+	$(INSTALL_DIR) $(STAGING_DIR_HOSTPKG)/bin
+	$(INSTALL_BIN) $(HOST_BUILD_DIR)/tools/rpcgen/rpcgen $(STAGING_DIR_HOSTPKG)/bin/rpcgen
 endef
 
 define Package/nfs-kernel-server/install

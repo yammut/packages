@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2011-2014 OpenWrt.org
+# Copyright (C) 2011-2017 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,13 +8,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=jansson
-PKG_VERSION:=2.7
+PKG_VERSION:=2.11
 PKG_RELEASE:=1
 PKG_LICENSE:=MIT
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
 PKG_SOURCE_URL:=http://www.digip.org/jansson/releases/
-PKG_MD5SUM:=3a106a465bbb77637550b422f5b262ef
+PKG_HASH:=783132e2fc970feefc2fa54199ef65ee020bd8e0e991a78ea44b8586353a0947
 
 PKG_INSTALL:=1
 PKG_BUILD_PARALLEL:=1

@@ -85,9 +85,8 @@ UB_LIST_ZONE_NAMES=""
 
 bundle_all_networks() {
   local cfg="$1"
-  local ifname ifdashname
+  local ifname ifdashname validip
   local subnet subnets subnets4 subnets6
-  local validip4 validip6
 
   network_get_subnets  subnets4 "$cfg"
   network_get_subnets6 subnets6 "$cfg"
@@ -99,11 +98,10 @@ bundle_all_networks() {
 
   if [ -n "$subnets" ] ; then
     for subnet in $subnets ; do
-      validip4=$( valid_subnet4 $subnet )
-      validip6=$( valid_subnet6 $subnet )
+      validip=$( valid_subnet_any $subnet )
 
 
-      if [ "$validip4" = "ok" -o "$validip6" = "ok" ] ; then
+      if [ "$validip" = "ok" ] ; then
         UB_LIST_NETW_ALL="$UB_LIST_NETW_ALL $ifdashname@$subnet"
       fi
     done
@@ -375,8 +373,10 @@ unbound_control() {
 
 unbound_zone() {
   local cfg=$1
+  local servers_ip=""
+  local servers_host=""
   local zone_sym zone_name zone_type zone_enabled zone_file
-  local tls_upstream fallback proivder
+  local tls_upstream fallback
   local server port tls_port tls_index tls_suffix url_dir
 
   if [ ! -f "$UB_ZONE_CONF" ] ; then
@@ -464,17 +464,50 @@ unbound_zone() {
 
 
       if [ -n "$UB_LIST_ZONE_NAMES" -a -n "$UB_LIST_ZONE_SERVERS" ] ; then
+        for server in $UB_LIST_ZONE_SERVERS ; do
+          if [ "$( valid_subnet_any $server )" = "not" ] ; then
+            case $server in
+              *@[0-9]*)
+                # unique Unbound option for server host name
+                servers_host="$servers_host $server"
+                ;;
+
+              *)
+                if [ "$tls_upstream" = "yes" ] ; then
+                  servers_host="$servers_host $server${tls_port:+@${tls_port}}"
+                else
+                  servers_host="$servers_host $server${port:+@${port}}"
+                fi
+            esac
+
+          else
+            case $server in
+              *[0-9]@[0-9]*)
+                # unique Unbound option for server address
+                servers_ip="$servers_ip $server"
+                ;;
+
+              *)
+                if [ "$tls_upstream" = "yes" ] ; then
+                  servers_ip="$servers_ip $server$tls_suffix"
+                else
+                  servers_ip="$servers_ip $server${port:+@${port}}"
+                fi
+            esac
+          fi
+        done
+
+
         for zonename in $UB_LIST_ZONE_NAMES ; do
           {
             # generate a forward-zone with or without tls
             echo "forward-zone:"
             echo "  name: $zonename"
-            for server in $UB_LIST_ZONE_SERVERS ; do
-              if [ "$tls_upstream" = "yes" ] ; then
-                echo "  forward-addr: $server${tls_suffix}"
-              else
-                echo "  forward-addr: $server${port:+@${port}}"
-              fi
+            for server in $servers_host ; do
+              echo "  forward-host: $server"
+            done
+            for server in $servers_ip ; do
+              echo "  forward-addr: $server"
             done
             echo "  forward-first: $fallback"
             echo "  forward-tls-upstream: $tls_upstream"
@@ -586,7 +619,6 @@ unbound_conf() {
         echo "  port: $UB_N_RX_PORT"
         echo "  outgoing-port-permit: 10240-65535"
         echo "  interface: 0.0.0.0"
-        echo "  interface: ::0"
         echo "  outgoing-interface: 0.0.0.0"
         echo "  do-ip4: yes"
         echo "  do-ip6: no"
@@ -599,10 +631,23 @@ unbound_conf() {
         echo "  edns-buffer-size: $UB_N_EDNS_SIZE"
         echo "  port: $UB_N_RX_PORT"
         echo "  outgoing-port-permit: 10240-65535"
-        echo "  interface: 0.0.0.0"
         echo "  interface: ::0"
         echo "  outgoing-interface: ::0"
         echo "  do-ip4: no"
+        echo "  do-ip6: yes"
+        echo
+      } >> $UB_CORE_CONF
+      ;;
+
+   ip6_local)
+      {
+        echo "  edns-buffer-size: $UB_N_EDNS_SIZE"
+        echo "  port: $UB_N_RX_PORT"
+        echo "  outgoing-port-permit: 10240-65535"
+        echo "  interface: 0.0.0.0"
+        echo "  interface: ::0"
+        echo "  outgoing-interface: 0.0.0.0"
+        echo "  do-ip4: yes"
         echo "  do-ip6: yes"
         echo
       } >> $UB_CORE_CONF
@@ -659,27 +704,15 @@ unbound_conf() {
   esac
 
 
-  {
-    # Other harding and options for an embedded router
-    echo "  harden-short-bufsize: yes"
-    echo "  harden-large-queries: yes"
-    echo "  harden-glue: yes"
-    echo "  harden-below-nxdomain: no"
-    echo "  harden-referral-path: no"
-    echo "  use-caps-for-id: no"
-    echo
-  } >> $UB_CORE_CONF
-
-
   case "$UB_D_RESOURCE" in
     # Tiny - Unbound's recommended cheap hardware config
     tiny)   rt_mem=1  ; rt_conn=2  ; rt_buff=1 ;;
     # Small - Half RRCACHE and open ports
     small)  rt_mem=8  ; rt_conn=10 ; rt_buff=2 ;;
     # Medium - Nearly default but with some added balancintg
-    medium) rt_mem=16 ; rt_conn=20 ; rt_buff=4 ;;
+    medium) rt_mem=16 ; rt_conn=15 ; rt_buff=4 ;;
     # Large - Double medium
-    large)  rt_mem=32 ; rt_conn=40 ; rt_buff=4 ;;
+    large)  rt_mem=32 ; rt_conn=20 ; rt_buff=4 ;;
     # Whatever unbound does
     *) rt_mem=0 ; rt_conn=0 ;;
   esac
@@ -687,10 +720,16 @@ unbound_conf() {
 
   if [ "$rt_mem" -gt 0 ] ; then
     {
+      # Other harding and options for an embedded router
+      echo "  harden-short-bufsize: yes"
+      echo "  harden-large-queries: yes"
+      echo "  harden-glue: yes"
+      echo "  use-caps-for-id: no"
+      echo
       # Set memory sizing parameters
       echo "  msg-buffer-size: $(($rt_buff*8192))"
-      echo "  outgoing-range: $(($rt_conn*64))"
-      echo "  num-queries-per-thread: $(($rt_conn*32))"
+      echo "  outgoing-range: $(($rt_conn*32))"
+      echo "  num-queries-per-thread: $(($rt_conn*16))"
       echo "  outgoing-num-tcp: $(($rt_conn))"
       echo "  incoming-num-tcp: $(($rt_conn))"
       echo "  rrset-cache-size: $(($rt_mem*256))k"

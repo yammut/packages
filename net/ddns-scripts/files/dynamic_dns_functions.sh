@@ -21,7 +21,7 @@
 . /lib/functions/network.sh
 
 # GLOBAL VARIABLES #
-VERSION="2.7.8-1"
+VERSION="2.7.8-4"
 SECTION_ID=""		# hold config's section name
 VERBOSE=0		# default mode is log to console, but easily changed with parameter
 MYPROG=$(basename $0)	# my program call name
@@ -63,6 +63,12 @@ IPV4_REGEX="[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}"
 # IPv6       ( ( 0-9a-f  1-4char ":") min 1x) ( ( 0-9a-f  1-4char   )optional) ( (":" 0-9a-f 1-4char  ) min 1x)
 IPV6_REGEX="\(\([0-9A-Fa-f]\{1,4\}:\)\{1,\}\)\(\([0-9A-Fa-f]\{1,4\}\)\{0,1\}\)\(\(:[0-9A-Fa-f]\{1,4\}\)\{1,\}\)"
 
+# characters that are dangerous to pass to a shell command line
+SHELL_ESCAPE="[\"\'\`\$\!();><{}?|\[\]\*\\\\]"
+
+# dns character set
+DNS_CHARSET="[@a-zA-Z0-9._-]"
+
 # detect if called by ddns-lucihelper.sh script, disable retrys (empty variable == false)
 LUCI_HELPER=$(printf %s "$MYPROG" | grep -i "luci")
 
@@ -78,7 +84,8 @@ WGET=$(which wget)
 WGET_SSL=$(which wget-ssl)
 
 CURL=$(which curl)
-
+# CURL_SSL not empty then SSL support available
+CURL_SSL=$($CURL -V 2>/dev/null | grep -F "https")
 # CURL_PROXY not empty then Proxy support available
 CURL_PROXY=$(find /lib /usr/lib -name libcurl.so* -exec strings {} 2>/dev/null \; | grep -im1 "all_proxy")
 
@@ -474,6 +481,27 @@ timeout() {
 	return $status
 }
 
+# sanitize a variable
+# $1	variable name
+# $2	allowed shell pattern
+# $3	disallowed shell pattern
+sanitize_variable() {
+	local __VAR=$1
+	eval __VALUE=\$$__VAR
+	local __ALLOWED=$2
+	local __REJECT=$3
+
+	# removing all allowed should give empty string
+	if [ -n "$__ALLOWED" ]; then
+		[ -z "${__VALUE//$__ALLOWED}" ] || write_log 12 "sanitize on $__VAR found characters outside allowed subset"
+	fi
+
+	# removing rejected pattern should give the same string as the input
+	if [ -n "$__REJECT" ]; then
+		[ "$__VALUE" = "${__VALUE//$__REJECT}" ] || write_log 12 "sanitize on $__VAR found rejected characters"
+	fi
+}
+
 # verify given host and port is connectable
 # $1	Host/IP to verify
 # $2	Port to verify
@@ -726,8 +754,6 @@ do_transfer() {
 	# 2nd choice is cURL IPv4/IPv6/HTTPS
 	# libcurl might be compiled without Proxy or HTTPS Support
 	elif [ -n "$CURL" ]; then
-		# CURL_SSL not empty then SSL support available
-		CURL_SSL=$($(which curl) -V 2>/dev/null | grep "Protocols:" | grep -F "https")
 		__PROG="$CURL -RsS -o $DATFILE --stderr $ERRFILE"
 		# check HTTPS support
 		[ -z "$CURL_SSL" -a $use_https -eq 1 ] && \
@@ -902,7 +928,7 @@ get_local_ip () {
 	write_log 7 "Detect local IP on '$ip_source'"
 
 	while : ; do
-		if [ -n "$ip_network" ]; then
+		if [ -n "$ip_network" -a "$ip_source" = "network" ]; then
 			# set correct program
 			network_flush_cache	# force re-read data from ubus
 			[ $use_ipv6 -eq 0 ] && __RUNPROG="network_get_ipaddr" \
@@ -910,7 +936,7 @@ get_local_ip () {
 			eval "$__RUNPROG __DATA $ip_network" || \
 				write_log 13 "Can not detect local IP using $__RUNPROG '$ip_network' - Error: '$?'"
 			[ -n "$__DATA" ] && write_log 7 "Local IP '$__DATA' detected on network '$ip_network'"
-		elif [ -n "$ip_interface" ]; then
+		elif [ -n "$ip_interface" -a "$ip_source" = "interface" ]; then
 			local __DATA4=""; local __DATA6=""
 			if [ -n "$(which ip)" ]; then		# ip program installed
 				write_log 7 "#> ip -o addr show dev $ip_interface scope global >$DATFILE 2>$ERRFILE"
@@ -989,7 +1015,7 @@ get_local_ip () {
 			fi
 			[ $use_ipv6 -eq 0 ] && __DATA="$__DATA4" || __DATA="$__DATA6"
 			[ -n "$__DATA" ] && write_log 7 "Local IP '$__DATA' detected on interface '$ip_interface'"
-		elif [ -n "$ip_script" ]; then
+		elif [ -n "$ip_script" -a "$ip_source" = "script" ]; then
 			write_log 7 "#> $ip_script >$DATFILE 2>$ERRFILE"
 			eval $ip_script >$DATFILE 2>$ERRFILE
 			__ERR=$?
@@ -1000,7 +1026,7 @@ get_local_ip () {
 				write_log 3 "$ip_script Error: '$__ERR'"
 				write_log 7 "$(cat $ERRFILE)"		# report error
 			fi
-		elif [ -n "$ip_url" ]; then
+		elif [ -n "$ip_url" -a "$ip_source" = "web" ]; then
 			do_transfer "$ip_url"
 			# use correct regular expression
 			[ $use_ipv6 -eq 0 ] \

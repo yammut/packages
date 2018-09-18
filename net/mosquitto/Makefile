@@ -9,14 +9,14 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mosquitto
-PKG_VERSION:=1.5
+PKG_VERSION:=1.5.1
 PKG_RELEASE:=3
 PKG_LICENSE:=BSD-3-Clause
 PKG_LICENSE_FILES:=LICENSE.txt
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=http://mosquitto.org/files/source/
-PKG_HASH:=80c9606a906c736fe582b67bdfb650ee45239fea058fe34927f81277d3486e21
+PKG_SOURCE_URL:=https://mosquitto.org/files/source/
+PKG_HASH:=8557bc7ae34dfaf32a0fb56d2491b7a7f731269c88337227233013502df4d5b0
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(BUILD_VARIANT)/$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
@@ -197,6 +197,15 @@ define Build/InstallDev
 	$(CP) $(PKG_BUILD_DIR)/lib/cpp/libmosquittopp.so.1 $(1)/usr/lib/
 	$(LN) libmosquitto.so.1 $(1)/usr/lib/libmosquitto.so
 	$(LN) libmosquittopp.so.1 $(1)/usr/lib/libmosquittopp.so
+	$(INSTALL_DIR) $(1)/usr/lib/pkgconfig
+	$(CP) $(PKG_BUILD_DIR)/libmosquitto.pc.in $(1)/usr/lib/pkgconfig/libmosquitto.pc
+	sed -i -e "s#@CMAKE_INSTALL_PREFIX@#/usr#" \
+	       -e "s#@VERSION@#$(PKG_VERSION)#" \
+	    $(1)/usr/lib/pkgconfig/libmosquitto.pc
+	$(CP) $(PKG_BUILD_DIR)/libmosquittopp.pc.in $(1)/usr/lib/pkgconfig/libmosquittopp.pc
+	sed -i -e "s#@CMAKE_INSTALL_PREFIX@#/usr#" \
+	       -e "s#@VERSION@#$(PKG_VERSION)#" \
+	    $(1)/usr/lib/pkgconfig/libmosquittopp.pc
 endef
 
 # This installs files on the target.  Compare with Build/InstallDev

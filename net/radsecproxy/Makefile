@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=radsecproxy
 PKG_VERSION:=1.7.2
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://github.com/radsecproxy/radsecproxy/releases/download/$(PKG_VERSION)/
@@ -17,6 +17,7 @@ PKG_HASH:=2cf23e618ab9275221350acf5a97bce4ff18aee472045f8a3b4c7673491079d2
 
 PKG_LICENSE:=BSD-3-CLAUSE
 PKG_LICENSE_FILES:=LICENSE
+PKG_CPE_ID:=cpe:/a:uninett:radsecproxy
 
 PKG_FIXUP:=autoreconf
 PKG_INSTALL:=1

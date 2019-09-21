@@ -8,14 +8,15 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=yara
-PKG_VERSION:=3.7.1
+PKG_VERSION:=3.10.0
 PKG_RELEASE:=1
 PKG_LICENSE:=BSD-3-Clause
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://github.com/VirusTotal/yara/archive/v$(PKG_VERSION)/
-PKG_HASH:=df077a29b0fffbf4e7c575f838a440f42d09b215fcb3971e6fb6360318a64892
+PKG_SOURCE_URL:=https://codeload.github.com/VirusTotal/yara/tar.gz/v$(PKG_VERSION)?
+PKG_HASH:=3281d43d6b49a4ca8d3a5d2521e06a0b72863702022f981b051856c2b83449c2
 
+PKG_CPE_ID:=cpe:/a:virustotal:yara
 PKG_FIXUP:=autoreconf
 PKG_BUILD_PARALLEL:=1
 PKG_INSTALL:=1

@@ -8,20 +8,18 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=file
-PKG_VERSION:=5.33
-PKG_RELEASE:=2
+PKG_VERSION:=5.37
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://sources.lede-project.org/ \
-	http://pkgs.fedoraproject.org/lookaside/pkgs/file/ \
+PKG_SOURCE_URL:=https://src.fedoraproject.org/lookaside/pkgs/file/ \
 	http://download.openpkg.org/components/cache/file/ \
 	ftp://ftp.astron.com/pub/file/
-PKG_HASH:=1c52c8c3d271cd898d5511c36a68059cda94036111ab293f01f83c3525b737c6
+PKG_HASH:=e9c13967f7dd339a3c241b7710ba093560b9a33013491318e88e6b8b57bae07f
 
 PKG_LICENSE:=BSD-2c
 PKG_LICENSE_FILES:=COPYING
 
-PKG_FIXUP:=autoreconf
 PKG_INSTALL:=1
 PKG_BUILD_PARALLEL:=1
 
@@ -29,7 +27,7 @@ include $(INCLUDE_DIR)/package.mk
 
 define Package/file/Default
   TITLE:=File type determination
-  URL:=ftp://ftp.astron.com/pub/file/
+  URL:=https://darwinsys.com/file/
   MAINTAINER:=Marko Ratkaj <marko.ratkaj@sartura.hr>
 endef
 
@@ -49,14 +47,18 @@ $(call Package/file/Default)
   DEPENDS:=+zlib
 endef
 
+TARGET_CFLAGS += $(FPIC)
+TARGET_LDFLAGS += -Wl,--gc-sections,--as-needed
+
 CONFIGURE_ARGS += \
 	--enable-shared \
 	--enable-static \
-	--disable-libseccomp
+	--disable-libseccomp \
+	--disable-rpath \
+	--disable-warnings \
+	--without-pic
 
 MAKE_PATH := src
-
-TARGET_CFLAGS += $(FPIC)
 
 define Build/Compile/magic
 	( cd $(PKG_BUILD_DIR)/magic/Magdir; \

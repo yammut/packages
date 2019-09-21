@@ -21,7 +21,7 @@
 . /lib/functions/network.sh
 
 # GLOBAL VARIABLES #
-VERSION="2.7.8-4"
+VERSION="2.7.8-11"
 SECTION_ID=""		# hold config's section name
 VERBOSE=0		# default mode is log to console, but easily changed with parameter
 MYPROG=$(basename $0)	# my program call name
@@ -282,11 +282,11 @@ write_log() {
 	[ $__LEVEL -eq 7 ] && return	# no syslog for debug messages
 	__CMD=$(echo -e "$__CMD" | tr -d '\n' | tr '\t' '     ')        # remove \n \t chars
 	[ $__EXIT  -eq 1 ] && {
-		$__CMD		# force syslog before exit
+		eval "$__CMD"	# force syslog before exit
 		exit 1
 	}
 	[ $use_syslog -eq 0 ] && return
-	[ $((use_syslog + __LEVEL)) -le 7 ] && $__CMD
+	[ $((use_syslog + __LEVEL)) -le 7 ] && eval "$__CMD"
 
 	return
 }
@@ -301,32 +301,12 @@ write_log() {
 urlencode() {
 	# $1	Name of Variable to store encoded string to
 	# $2	string to encode
-	local __STR __LEN __CHAR __OUT
-	local __ENC=""
-	local __POS=1
+	local __ENC
 
 	[ $# -ne 2 ] && write_log 12 "Error calling 'urlencode()' - wrong number of parameters"
 
-	__STR="$2"		# read string to encode
-	__LEN=${#__STR}		# get string length
-
-	while [ $__POS -le $__LEN ]; do
-		# read one chat of the string
-		__CHAR=$(expr substr "$__STR" $__POS 1)
-
-		case "$__CHAR" in
-		        [-_.~a-zA-Z0-9] )
-				# standard char
-				__OUT="${__CHAR}"
-				;;
-		        * )
-				# special char get %hex code
-		               __OUT=$(printf '%%%02x' "'$__CHAR" )
-				;;
-		esac
-		__ENC="${__ENC}${__OUT}"	# append to encoded string
-		__POS=$(( $__POS + 1 ))		# increment position
-	done
+	__ENC="$(awk -v str="$2" 'BEGIN{ORS="";for(i=32;i<=127;i++)lookup[sprintf("%c",i)]=i
+		for(k=1;k<=length(str);++k){enc=substr(str,k,1);if(enc!~"[-_.~a-zA-Z0-9]")enc=sprintf("%%%02x", lookup[enc]);print enc}}')"
 
 	eval "$1=\"$__ENC\""	# transfer back to variable
 	return 0
@@ -339,16 +319,19 @@ urlencode() {
 # $2	Name of Variable to store script to
 # $3	Name of Variable to store service answer to
 get_service_data() {
+	local __FILE __SERVICE __DATA __ANSWER __URL __SCRIPT __PIPE
+
 	[ $# -ne 3 ] && write_log 12 "Error calling 'get_service_data()' - wrong number of parameters"
 
 	__FILE="/etc/ddns/services"				# IPv4
 	[ $use_ipv6 -ne 0 ] && __FILE="/etc/ddns/services_ipv6"	# IPv6
 
 	# workaround with variables; pipe create subshell with no give back of variable content
-	mkfifo pipe_$$
+	__PIPE="$ddns_rundir/pipe_$$"
+	mkfifo "$__PIPE"
+
 	# only grep without # or whitespace at linestart | remove "
-#	grep -v -E "(^#|^[[:space:]]*$)" $__FILE | sed -e s/\"//g > pipe_$$ &
-	sed '/^#/d; /^[ \t]*$/d; s/\"//g' $__FILE  > pipe_$$ &
+	sed '/^#/d; /^[ \t]*$/d; s/\"//g' "$__FILE" > "$__PIPE" &
 
 	while read __SERVICE __DATA __ANSWER; do
 		if [ "$__SERVICE" = "$service_name" ]; then
@@ -359,11 +342,11 @@ get_service_data() {
 			eval "$1=\"$__URL\""
 			eval "$2=\"$__SCRIPT\""
 			eval "$3=\"$__ANSWER\""
-			rm pipe_$$
+			rm "$__PIPE"
 			return 0
 		fi
-	done < pipe_$$
-	rm pipe_$$
+	done < "$__PIPE"
+	rm "$__PIPE"
 
 	eval "$1=\"\""	# no service match clear variables
 	eval "$2=\"\""
@@ -553,17 +536,17 @@ verify_host_port() {
 		}
 		# extract IP address
 		if [ -n "$BIND_HOST" -o -n "$KNOT_HOST" ]; then	# use BIND host or Knot host if installed
-			__IPV4=$(cat $DATFILE | awk -F "address " '/has address/ {print $2; exit}' )
-			__IPV6=$(cat $DATFILE | awk -F "address " '/has IPv6/ {print $2; exit}' )
+			__IPV4="$(awk -F "address " '/has address/ {print $2; exit}' "$DATFILE")"
+			__IPV6="$(awk -F "address " '/has IPv6/ {print $2; exit}' "$DATFILE")"
 		elif [ -n "$DRILL" ]; then	# use drill if installed
-			__IPV4=$(cat $DATFILE | awk '/^'"$lookup_host"'/ {print $5}' | grep -m 1 -o "$IPV4_REGEX")
-			__IPV6=$(cat $DATFILE | awk '/^'"$lookup_host"'/ {print $5}' | grep -m 1 -o "$IPV6_REGEX")
+			__IPV4="$(awk '/^'"$__HOST"'/ {print $5}' "$DATFILE" | grep -m 1 -o "$IPV4_REGEX")"
+			__IPV6="$(awk '/^'"$__HOST"'/ {print $5}' "$DATFILE" | grep -m 1 -o "$IPV6_REGEX")"
 		elif [ -n "$HOSTIP" ]; then	# use hostip if installed
-			__IPV4=$(cat $DATFILE | grep -m 1 -o "$IPV4_REGEX")
-			__IPV6=$(cat $DATFILE | grep -m 1 -o "$IPV6_REGEX")
+			__IPV4="$(grep -m 1 -o "$IPV4_REGEX" "$DATFILE")"
+			__IPV6="$(grep -m 1 -o "$IPV6_REGEX" "$DATFILE")"
 		else	# use BusyBox nslookup
-			__IPV4=$(cat $DATFILE | sed -ne "/^Name:/,\$ { s/^Address[0-9 ]\{0,\}: \($IPV4_REGEX\).*$/\\1/p }")
-			__IPV6=$(cat $DATFILE | sed -ne "/^Name:/,\$ { s/^Address[0-9 ]\{0,\}: \($IPV6_REGEX\).*$/\\1/p }")
+			__IPV4="$(sed -ne "/^Name:/,\$ { s/^Address[0-9 ]\{0,\}: \($IPV4_REGEX\).*$/\\1/p }" "$DATFILE")"
+			__IPV6="$(sed -ne "/^Name:/,\$ { s/^Address[0-9 ]\{0,\}: \($IPV6_REGEX\).*$/\\1/p }" "$DATFILE")"
 		fi
 	}
 
@@ -718,7 +701,7 @@ do_transfer() {
 
 	# lets prefer GNU Wget because it does all for us - IPv4/IPv6/HTTPS/PROXY/force IP version
 	if [ -n "$WGET_SSL" -a $USE_CURL -eq 0 ]; then 			# except global option use_curl is set to "1"
-		__PROG="$WGET_SSL -nv -t 1 -O $DATFILE -o $ERRFILE"	# non_verbose no_retry outfile errfile
+		__PROG="$WGET_SSL --hsts-file=/tmp/.wget-hsts -nv -t 1 -O $DATFILE -o $ERRFILE"	# non_verbose no_retry outfile errfile
 		# force network/ip to use for communication
 		if [ -n "$bind_network" ]; then
 			local __BINDIP

@@ -1,6 +1,4 @@
 #
-# Copyright (C) 2007-2016 OpenWrt.org
-#
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
 #
@@ -8,26 +6,43 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=python-certifi
-PKG_VERSION:=2018.8.24
+PKG_VERSION:=2019.9.11
 PKG_RELEASE:=1
+
+PKG_MAINTAINER:=Eneas U de Queiroz <cote2004-github@yahoo.com>
 PKG_LICENSE:=MPL-2.0
+PKG_LICENSE_FILES:=LICENSE
 
 PKG_SOURCE:=certifi-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://files.pythonhosted.org/packages/source/c/certifi
-PKG_HASH:=376690d6f16d32f9d1fe8932551d80b23e9d393a8578c5633a2ed39a64861638
-PKG_BUILD_DIR:=$(BUILD_DIR)/certifi-$(PKG_VERSION)
+PKG_HASH:=e4f3620cfea4f83eedc95b24abd9cd56f3c4b146dd0177e83a21b4eb49e21e50
+
+PKG_BUILD_DIR:=$(BUILD_DIR)/$(BUILD_VARIANT)-certifi-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
 include ../python-package.mk
+include ../python3-package.mk
 
-define Package/python-certifi
+PKG_UNPACK:=$(HOST_TAR) -C $(PKG_BUILD_DIR) --strip-components=1 -xzf $(DL_DIR)/$(PKG_SOURCE)
+
+define Package/python-certifi/Default
   SUBMENU:=Python
   SECTION:=lang
   CATEGORY:=Languages
-  MAINTAINER:=Eneas U de Queiroz <cote2004-github@yahoo.com>
-  TITLE:=Python package for providing Mozilla's CA Bundle.
+  TITLE:=Python package for Mozilla's CA Bundle
   URL:=http://certifi.io/
-  DEPENDS:=+python
+endef
+
+define Package/python-certifi
+  $(call Package/python-certifi/Default)
+  DEPENDS:=+PACKAGE_python-certifi:python-light
+  VARIANT:=python
+endef
+
+define Package/python3-certifi
+  $(call Package/python-certifi/Default)
+  DEPENDS:=+PACKAGE_python3-certifi:python3-light
+  VARIANT:=python3
 endef
 
 define Package/python-certifi/description
@@ -35,15 +50,16 @@ define Package/python-certifi/description
   trustworthiness of SSL certificates while verifying the identity of TLS hosts.
 endef
 
-define Build/Compile
-	$(call Build/Compile/PyMod,,install --prefix=/usr --root=$(PKG_INSTALL_DIR))
+define Package/python3-certifi/description
+$(call Package/python-certifi/description)
+.
+(Variant for Python3)
 endef
 
-define Package/python-certifi/install
-	$(INSTALL_DIR) $(1)$(PYTHON_PKG_DIR)
-	$(CP) \
-	    $(PKG_INSTALL_DIR)$(PYTHON_PKG_DIR)/* \
-	    $(1)$(PYTHON_PKG_DIR)
-endef
-
+$(eval $(call PyPackage,python-certifi))
 $(eval $(call BuildPackage,python-certifi))
+$(eval $(call BuildPackage,python-certifi-src))
+
+$(eval $(call Py3Package,python3-certifi))
+$(eval $(call BuildPackage,python3-certifi))
+$(eval $(call BuildPackage,python3-certifi-src))

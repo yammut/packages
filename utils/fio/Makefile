@@ -8,16 +8,19 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=fio
-PKG_VERSION:=3.10
+PKG_VERSION:=3.15
 PKG_RELEASE:=1
 
-PKG_SOURCE_URL:=http://brick.kernel.dk/snaps
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
-PKG_HASH:=21150f1ac0b8d70f1b435a090221305b4e89ea17db3a313274d96b90b40dafcf
+PKG_SOURCE_URL:=http://brick.kernel.dk/snaps
+PKG_HASH:=246369954833e0d6be5ef4f9c47968adafcb4a0751badca2cdd80700b4bc5784
 
-PKG_MAINTAINER:=Dragan Stancevic <ds@codeminutia.com>
-PKG_LICENSE:=GPL-2.0+
+PKG_MAINTAINER:=Rosen Penev <rosenp@gmail.com>
+PKG_LICENSE:=GPL-2.0-or-later
 PKG_LICENSE_FILES:=COPYING
+
+PKG_INSTALL:=1
+PKG_BUILD_PARALLEL:=1
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -38,6 +41,7 @@ define Package/fio/description
 endef
 
 TARGET_CFLAGS := $(filter-out -O%,$(TARGET_CFLAGS))
+TARGET_LDFLAGS += -Wl,--gc-sections
 
 CONFIGURE_ARGS = \
 	--disable-numa \
@@ -50,11 +54,12 @@ CONFIGURE_ARGS = \
 	--disable-pmem \
 	--disable-native \
 	--cc="$(TARGET_CC)" \
-	--extra-cflags="$(TARGET_CFLAGS)"
+	--extra-cflags="$(TARGET_CFLAGS)" \
+	--prefix="$(CONFIGURE_PREFIX)"
 
 define Package/fio/install
 	$(INSTALL_DIR) $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/fio $(1)/usr/bin/
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/fio $(1)/usr/bin/
 endef
 
 $(eval $(call BuildPackage,fio))

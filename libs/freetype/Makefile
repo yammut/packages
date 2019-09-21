@@ -8,15 +8,15 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=freetype
-PKG_VERSION:=2.9.1
+PKG_VERSION:=2.10.1
 PKG_RELEASE:=1
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=@SF/freetype
-PKG_HASH:=db8d87ea720ea9d5edc5388fc7a0497bb11ba9fe972245e0f7f4c7e8b1e1e84d
+PKG_HASH:=16dbfa488a21fe827dc27eaf708f42f7aa3bb997d745d31a19781628c36ba26f
 
-PKG_LICENSE:=FTL GPL-2.0 MIT ZLIB
-PKG_LICENSE_FILES:=docs/LICENSE.TXT docs/FTL.TXT docs/GPLv2.TXT src/bdf/README src/pcf/README src/gzip/zlib.h
+PKG_LICENSE:=FTL GPL-2.0-only MIT ZLIB GPL-3.0-or-later
+PKG_LICENSE_FILES:=docs/LICENSE.TXT docs/FTL.TXT docs/GPLv2.TXT src/bdf/README src/pcf/README src/gzip/zlib.h builds/unix/config.sub builds/unix/config.guess builds/unix/libtool 
 PKG_CPE_ID:=cpe:/a:freetype:freetype2
 PKG_MAINTAINER:=Val Kulkov <val.kulkov@gmail.com>
 
@@ -50,6 +50,11 @@ CONFIGURE_ARGS += \
 	--with-bzip2=no \
 	--with-zlib=yes \
 	--with-png=yes
+
+HOST_CONFIGURE_ARGS+= \
+	--with-bzip2=no \
+	--with-zlib=no \
+	--with-png=no
 
 define Build/Compile
 	$(MAKE) -C $(PKG_BUILD_DIR) DESTDIR="$(PKG_INSTALL_DIR)" all install

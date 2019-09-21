@@ -9,8 +9,8 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=fftw3
 PKG_VERSION:=3.3.8
-PKG_RELEASE:=1
-PKG_LICENSE:=GPL-2.0+
+PKG_RELEASE:=2
+PKG_LICENSE:=GPL-2.0-or-later
 
 PKG_SOURCE:=fftw-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=http://www.fftw.org
@@ -24,7 +24,7 @@ include $(INCLUDE_DIR)/package.mk
 define Package/fftw3
   SECTION:=libs
   CATEGORY:=Libraries
-  DEPENDS:=@!avr32 +libpthread
+  DEPENDS:=+libpthread
   VARIANT:=double
   TITLE:=Fast Fourier transform library
   URL:=http://www.fftw.org/

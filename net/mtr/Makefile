@@ -9,15 +9,16 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mtr
 PKG_VERSION:=0.92
-PKG_RELEASE:=4
+PKG_RELEASE:=6
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://www.bitwizard.nl/mtr/files
 PKG_HASH:=f2979db9e2f41aa8e6574e7771767c9afe111d9213814eb47f5e1e71876e4382
 
 PKG_MAINTAINER:=Jonathan McCrohan <jmccrohan@gmail.com>
-PKG_LICENSE:=GPL-2.0+
+PKG_LICENSE:=GPL-2.0-or-later
 PKG_LICENSE_FILES:=COPYING
+PKG_CPE_ID:=cpe:/a:matt_kimball_and_roger_wolff:mtr
 
 PKG_INSTALL:=1
 PKG_BUILD_PARALLEL:=1
@@ -25,6 +26,16 @@ PKG_BUILD_PARALLEL:=1
 PKG_FIXUP:=autoreconf
 
 include $(INCLUDE_DIR)/package.mk
+
+# Creation of .tarball-version is an attempt to make it explicit to configure
+# script the program version.  See discussions at link [1] for more details
+#
+#  [1] mtr: add autoreconf, https://github.com/openwrt/packages/pull/6962#issuecomment-419156300
+#
+define Build/Prepare
+	$(call Build/Prepare/Default)
+	echo "$(PKG_VERSION)" >$(PKG_BUILD_DIR)/.tarball-version
+endef
 
 define Package/mtr
   SECTION:=net

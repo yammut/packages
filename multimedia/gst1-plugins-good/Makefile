@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=gst1-plugins-good
-PKG_VERSION:=1.14.2
+PKG_VERSION:=1.16.0
 PKG_RELEASE:=1
 
 PKG_MAINTAINER:=W. Michael Petullo <mike@flyn.org> \
@@ -16,17 +16,19 @@ PKG_MAINTAINER:=W. Michael Petullo <mike@flyn.org> \
 
 PKG_LICENSE:=LGPLv2
 PKG_LICENSE_FILES:=COPYING
+PKG_CPE_ID:=cpe:/a:gstreamer:good_plug-ins
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/gst-plugins-good-$(PKG_VERSION)
 PKG_SOURCE:=gst-plugins-good-$(PKG_VERSION).tar.xz
-PKG_SOURCE_URL:=http://gstreamer.freedesktop.org/src/gst-plugins-good/
-PKG_HASH:=c0575e2811860bfff59b865b8d125153859a01f0615fa41e279b64d88d25caad
+PKG_SOURCE_URL:=https://gstreamer.freedesktop.org/src/gst-plugins-good/
+PKG_HASH:=654adef33380d604112f702c2927574cfc285e31307b79e584113858838bb0fd
 
 PKG_CONFIG_DEPENDS:= \
 	CONFIG_PACKAGE_gst1-mod-lame \
 	CONFIG_PACKAGE_gst1-mod-mpg123 \
 
 PKG_FIXUP:=autoreconf
+PKG_BUILD_PARALLEL:=1
 PKG_INSTALL:=1
 
 include $(INCLUDE_DIR)/package.mk
@@ -38,7 +40,7 @@ define Package/gstreamer1-good/Default
   CATEGORY:=Multimedia
   SECTION:=multimedia
   TITLE:=GStreamer
-  URL:=http://gstreamer.freedesktop.org/
+  URL:=https://gstreamer.freedesktop.org/
   DEPENDS:= +libgstreamer1 +libgst1pbutils $(ICONV_DEPENDS)
 endef
 
@@ -97,8 +99,15 @@ CONFIGURE_ARGS += \
 	$(call GST_COND_SELECT,lame) \
         $(call GST_COND_SELECT,mpg123) \
 	\
+	--disable-Bsymbolic \
 	--disable-debug \
 	--disable-examples \
+	--disable-fatal-warnings \
+	--disable-glib-asserts \
+	--disable-gobject-cast-checks \
+	--disable-gtk-doc-html \
+	--disable-rpath \
+	--disable-valgrind \
 	\
 	--disable-aalib \
 	--disable-annodex \
@@ -127,14 +136,10 @@ CONFIGURE_ARGS += \
 	--disable-y4m \
 	--disable-zlib \
 	\
+	--without-gudev \
+	--without-libv4l2 \
 	--without-libiconv-prefix \
-	--without-libintl-prefix \
-	--without-x \
-
-EXTRA_LDFLAGS+= \
-	-Wl,-rpath-link=$(STAGING_DIR)/usr/lib \
-	$(if $(ICONV_FULL),-liconv) \
-
+	--without-libintl-prefix
 
 define Package/gst1-plugins-good/install
 	/bin/true

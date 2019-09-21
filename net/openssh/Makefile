@@ -8,20 +8,21 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=openssh
-PKG_VERSION:=7.8p1
-PKG_RELEASE:=1
+PKG_VERSION:=8.0p1
+PKG_RELEASE:=2
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/ \
 		https://ftp.spline.de/pub/OpenBSD/OpenSSH/portable/ \
 		https://anorien.csc.warwick.ac.uk/pub/OpenBSD/OpenSSH/portable/
-PKG_HASH:=1a484bb15152c183bb2514e112aa30dd34138c3cfb032eee5490a66c507144ca
+PKG_HASH:=bd943879e69498e8031eb6b7f44d08cdc37d59a7ab689aa0b437320c3481fd68
 
 PKG_LICENSE:=BSD ISC
 PKG_LICENSE_FILES:=LICENCE
-
+PKG_CPE_ID:=cpe:/a:openssh:openssh
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(BUILD_VARIANT)/$(PKG_NAME)-$(PKG_VERSION)
+PKG_REMOVE_FILES:=
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -129,8 +130,6 @@ endef
 define Package/openssh-sftp-server
 	$(call Package/openssh/Default)
 	TITLE+= SFTP server
-	# Strip dependencies to avoid pulling in OpenSSL etc.
-	DEPENDS:=
 endef
 
 define Package/openssh-sftp-server/description
@@ -179,7 +178,7 @@ CONFIGURE_ARGS += \
 	--without-pam
 endif
 
-ifeq ($(CONFIG_OPENSSL_ENGINE_CRYPTO),y)
+ifeq ($(CONFIG_OPENSSL_ENGINE),y)
 CONFIGURE_ARGS+= \
 	--with-ssl-engine
 endif
@@ -196,10 +195,6 @@ TARGET_LDFLAGS += -lpthread
 endif
 
 define Build/Compile
-	$(MAKE) -C $(PKG_BUILD_DIR) \
-		DESTDIR="$(PKG_INSTALL_DIR)" \
-		LIBS="" \
-		sftp-server
 	$(MAKE) -C $(PKG_BUILD_DIR) \
 		DESTDIR="$(PKG_INSTALL_DIR)" \
 		STRIP_OPT="" \
